@@ -13,17 +13,17 @@
   let error = "";
 
   let showForm = false;
-  let type = "";
+  let type = "default";
   let text = "";
   let expiration_date = "";
 
-  let symbol_table: Record<string, string> = {
-    default: "🔴",
-    verlof: "🌴",
-    ziekte: "🤒",
-    verjaardag: "🎂",
-    feestdag: "🎉",
-  };
+  let symbol_table = [
+    { value: "default", emoji: "🔴" },
+    { value: "verlof", emoji: "🌴" },
+    { value: "ziekte", emoji: "🤒" },
+    { value: "verjaardag", emoji: "🎂" },
+    { value: "feestdag", emoji: "🎉" },
+  ];
 
   function closeForm() {
     showForm = false;
@@ -40,7 +40,10 @@
   }
 
   function getEmoji(type: string): string {
-    return symbol_table[type?.toLowerCase()] ?? "🔴";
+    const match = symbol_table.find(
+      (item) => item.value === type?.toLowerCase(),
+    );
+    return match?.emoji ?? "🔴";
   }
 
   async function submitForm() {
@@ -111,29 +114,33 @@
       <form on:submit|preventDefault={submitForm}>
         <label>
           Type
-          <input bind:value={type} placeholder="default" />
-        </label>
+          <select bind:value={type}>
+            {#each symbol_table as opt (opt.value)}
+              <option value={opt.value}>{opt.value + " " + opt.emoji}</option>
+            {/each}
+          </select>
 
-        <label>
-          Tekst
-          <textarea
-            bind:value={text}
-            rows="3"
-            placeholder="De Kinder is goe beizg... ;)"
-          ></textarea>
-        </label>
+          <label>
+            Tekst
+            <textarea
+              bind:value={text}
+              rows="3"
+              placeholder="De Kinder is goe beizg... ;)"
+            ></textarea>
+          </label>
 
-        <label>
-          Aantal dagen
-          <input bind:value={expiration_date} placeholder="3" />
-        </label>
+          <label>
+            Aantal dagen
+            <input bind:value={expiration_date} placeholder="3" />
+          </label>
 
-        <div class="actions">
-          <button class="form-btn" type="button" on:click={closeForm}
-            >Cancel</button
-          >
-          <button class="form-btn" type="submit">Save</button>
-        </div>
+          <div class="actions">
+            <button class="form-btn" type="button" on:click={closeForm}
+              >Cancel</button
+            >
+            <button class="form-btn" type="submit">Save</button>
+          </div>
+        </label>
       </form>
     </div>
   {/if}
@@ -203,6 +210,7 @@
     gap: 6px;
   }
   input,
+  select,
   textarea {
     padding: 8px 10px;
     border: 1px solid #ccc;
