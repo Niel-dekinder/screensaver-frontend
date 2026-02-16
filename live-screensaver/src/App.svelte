@@ -3,6 +3,7 @@
   import { BASE_URL } from "./api";
 
   interface Notification {
+    id: number;
     type: string;
     text: string;
     expiration_date: Date;
@@ -88,7 +89,7 @@
   {#if notifications.length === 0}
     <div class="message">No notifications</div>
   {:else}
-    {#each notifications as n (n.type ?? n.text ?? n)}
+    {#each notifications as n (n.id)}
       <div class="message">
         <span title={n.type} style="cursor: pointer;">
           {getEmoji(n.type)}
