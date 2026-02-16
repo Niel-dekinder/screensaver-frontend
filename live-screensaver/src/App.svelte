@@ -40,9 +40,11 @@
   }
 
   function getEmoji(type: string): string {
+    console.log(type);
     const match = symbol_table.find(
       (item) => item.value === type?.toLowerCase(),
     );
+    console.log(match);
     return match?.emoji ?? "🔴";
   }
 
