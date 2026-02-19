@@ -40,11 +40,9 @@
   }
 
   function getEmoji(type: string): string {
-    console.log(type);
     const match = symbol_table.find(
       (item) => item.value === type?.toLowerCase(),
     );
-    console.log(match);
     return match?.emoji ?? "🔴";
   }
 
@@ -60,11 +58,12 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type: type || "default",
-          text: text || "Geen tekst ingevoerd",
+          type: type,
+          text: text,
           expiration_date: get_expiration_date(expiration_date),
         }),
       });
+      type = "default";
       closeForm();
     } catch (e) {
       console.error(e);
