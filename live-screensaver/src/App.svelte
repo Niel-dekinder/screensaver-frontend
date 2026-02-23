@@ -103,7 +103,7 @@
     {/each}
   {/if}
   {#if showForm}
-    <div class="backdrop" on:click={closeForm}></div>
+    <button type="button" class="backdrop" on:click={closeForm} aria-label="button"></button>
     <div
       class="modal"
       role="dialog"
