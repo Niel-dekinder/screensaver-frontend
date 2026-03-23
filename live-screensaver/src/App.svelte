@@ -13,6 +13,8 @@
   let error = "";
 
   let showForm = false;
+  let editingId: number | null = null;
+  let editingExpiration = "";
   let type = "default";
   let text = "";
   let expiration_date = "";
@@ -27,9 +29,27 @@
 
   function closeForm() {
     showForm = false;
+    editingId = null;
+    editingExpiration = "";
+    type = "default";
+    text = "";
+    expiration_date = "";
   }
 
   function openForm() {
+    editingId = null;
+    type = "default";
+    text = "";
+    expiration_date = "";
+    showForm = true;
+  }
+
+  function openEditForm(n: Notification) {
+    editingId = n.id;
+    type = n.type;
+    text = n.text;
+    editingExpiration = String(n.expiration_date);
+    expiration_date = "";
     showForm = true;
   }
 
@@ -52,19 +72,37 @@
       return;
     }
     try {
-      await fetch(`${BASE_URL}/post`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: type,
-          text: text,
-          expiration_date: get_expiration_date(expiration_date),
-        }),
-      });
-      type = "default";
+      const body = {
+        type,
+        text,
+        expiration_date: expiration_date
+          ? get_expiration_date(expiration_date)
+          : editingExpiration,
+      };
+      if (editingId !== null) {
+        await fetch(`${BASE_URL}/notifications/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } else {
+        await fetch(`${BASE_URL}/post`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      }
       closeForm();
+      await loadNotifications();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function deleteNotification(id: number) {
+    try {
+      await fetch(`${BASE_URL}/notifications/${id}`, { method: "DELETE" });
+      await loadNotifications();
     } catch (e) {
       console.error(e);
     }
@@ -95,10 +133,12 @@
   {:else}
     {#each notifications as n (n.id)}
       <div class="message">
-        <span title={n.type} style="cursor: pointer;">
-          {getEmoji(n.type)}
-        </span>
+        <span title={n.type}>{getEmoji(n.type)}</span>
         {n.text}
+        <span class="row-actions">
+          <button class="icon-btn" title="Bewerk" on:click={() => openEditForm(n)}>✏️</button>
+          <button class="icon-btn" title="Verwijder" on:click={() => deleteNotification(n.id)}>🗑️</button>
+        </span>
       </div>
     {/each}
   {/if}
@@ -110,7 +150,7 @@
       aria-modal="true"
       aria-label="Add notification"
     >
-      <div class="modal-title">Voeg tekst toe</div>
+      <div class="modal-title">{editingId !== null ? "Bewerk tekst" : "Voeg tekst toe"}</div>
 
       <form on:submit|preventDefault={submitForm}>
         <label>
@@ -131,8 +171,8 @@
           </label>
 
           <label>
-            Aantal dagen
-            <input bind:value={expiration_date} placeholder="3" />
+            Aantal dagen{editingId !== null ? " (leeg = ongewijzigd)" : ""}
+            <input bind:value={expiration_date} placeholder={editingId !== null ? "ongewijzigd" : "3"} />
           </label>
 
           <div class="actions">
@@ -180,6 +220,34 @@
     font-size: 40px;
     font-family: Arial, sans-serif;
     text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .row-actions {
+    display: inline-flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .message:hover .row-actions {
+    opacity: 1;
+  }
+
+  .icon-btn {
+    background: rgba(0, 0, 0, 0.45);
+    border: none;
+    border-radius: 6px;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 2px 6px;
+    line-height: 1;
+  }
+
+  .icon-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .backdrop {
