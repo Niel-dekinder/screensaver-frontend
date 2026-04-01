@@ -261,6 +261,7 @@
     gap: 12px;
     break-inside: avoid;
     margin-bottom: 20px;
+    white-space: nowrap;
   }
 
   .row-actions {
