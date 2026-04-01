@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, afterUpdate, tick } from "svelte";
   import { BASE_URL } from "./api";
 
   interface Notification {
@@ -11,6 +11,9 @@
 
   let notifications: Notification[] = [];
   let error = "";
+  let columnCount = 1;
+  let notifWrapper: HTMLElement | null = null;
+  let isRecalculating = false;
 
   let showForm = false;
   let editingId: number | null = null;
@@ -119,10 +122,34 @@
     }
   }
 
+  async function recalcColumns() {
+    if (!notifWrapper || isRecalculating) return;
+    isRecalculating = true;
+    columnCount = 1;
+    await tick();
+    const available = window.innerHeight - 80;
+    while (
+      notifWrapper.scrollHeight > available &&
+      columnCount < notifications.length
+    ) {
+      columnCount++;
+      await tick();
+    }
+    isRecalculating = false;
+  }
+
+  afterUpdate(() => {
+    recalcColumns();
+  });
+
   onMount(() => {
     loadNotifications();
     const t = setInterval(loadNotifications, 5000);
-    return () => clearInterval(t);
+    window.addEventListener("resize", recalcColumns);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("resize", recalcColumns);
+    };
   });
 </script>
 
@@ -131,16 +158,22 @@
   {#if notifications.length === 0}
     <div class="message">No notifications</div>
   {:else}
-    {#each notifications as n (n.id)}
-      <div class="message">
-        <span title={n.type}>{getEmoji(n.type)}</span>
-        {n.text}
-        <span class="row-actions">
-          <button class="icon-btn" title="Bewerk" on:click={() => openEditForm(n)}>✏️</button>
-          <button class="icon-btn" title="Verwijder" on:click={() => deleteNotification(n.id)}>🗑️</button>
-        </span>
-      </div>
-    {/each}
+    <div
+      class="notif-wrapper"
+      style="columns: {columnCount}"
+      bind:this={notifWrapper}
+    >
+      {#each notifications as n (n.id)}
+        <div class="message">
+          <span title={n.type}>{getEmoji(n.type)}</span>
+          {n.text}
+          <span class="row-actions">
+            <button class="icon-btn" title="Bewerk" on:click={() => openEditForm(n)}>✏️</button>
+            <button class="icon-btn" title="Verwijder" on:click={() => deleteNotification(n.id)}>🗑️</button>
+          </span>
+        </div>
+      {/each}
+    </div>
   {/if}
   {#if showForm}
     <button type="button" class="backdrop" on:click={closeForm} aria-label="button"></button>
@@ -203,7 +236,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px;
   }
 
   .top-button {
@@ -215,6 +247,10 @@
     cursor: pointer;
   }
 
+  .notif-wrapper {
+    column-gap: 60px;
+  }
+
   .message {
     color: white;
     font-size: 40px;
@@ -223,6 +259,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    break-inside: avoid;
+    margin-bottom: 20px;
   }
 
   .row-actions {
