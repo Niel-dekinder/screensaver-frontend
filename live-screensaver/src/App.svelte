@@ -249,6 +249,9 @@
 
   .notif-wrapper {
     column-gap: 60px;
+    padding: 0 40px;
+    box-sizing: border-box;
+    max-width: 100vw;
   }
 
   .message {
