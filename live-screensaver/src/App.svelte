@@ -169,7 +169,7 @@
       {#each notifications as n (n.id)}
         <div class="message">
           <span title={n.type}>{getEmoji(n.type)}</span>
-          {n.text}
+          <span class="message-text">{n.text}</span>
           <span class="row-actions">
             <button class="icon-btn" title="Bewerk" on:click={() => openEditForm(n)}>✏️</button>
             <button class="icon-btn" title="Verwijder" on:click={() => deleteNotification(n.id)}>🗑️</button>
@@ -263,15 +263,29 @@
     font-family: Arial, sans-serif;
     text-align: center;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: center;
     gap: 12px;
     break-inside: avoid;
     margin-bottom: 20px;
-    white-space: nowrap;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .message-text {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .row-actions {
     display: inline-flex;
+    flex: 0 0 auto;
     gap: 4px;
     opacity: 0;
     transition: opacity 0.15s;
