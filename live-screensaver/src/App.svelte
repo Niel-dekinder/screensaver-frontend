@@ -232,9 +232,23 @@
     background: url("/background.png") center center / cover no-repeat fixed;
   }
 
+  :global(body) {
+    display: block;
+  }
+
+  :global(#app) {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: initial;
+  }
+
   .container {
     position: relative;
     height: 100vh;
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -253,8 +267,8 @@
   .notif-wrapper {
     column-gap: 60px;
     padding: 0 40px;
+    width: min(100%, 1800px);
     box-sizing: border-box;
-    max-width: 100vw;
   }
 
   .message {
